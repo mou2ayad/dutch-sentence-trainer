@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dutch Translation Flashcards</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f3f6fb;
+    color: #111827;
+    padding: 16px;
+  }
+  .app {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  .card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 18px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  }
+  h1 {
+    margin: 0 0 8px 0;
+    font-size: 24px;
+  }
+  .muted {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 14px;
+  }
+  .label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #6b7280;
+    margin: 12px 0 6px;
+    text-transform: uppercase;
+  }
+  textarea, select, input {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 16px;
+    background: #fff;
+  }
+  textarea {
+    min-height: 120px;
+    resize: vertical;
+  }
+  .translation-box {
+    margin-top: 16px;
+    width: 100%;
+    border-radius: 18px;
+    background: #e5eefc;
+    padding: 24px;
+    min-height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-sizing: border-box;
+  }
+  .translation-text {
+    font-size: 30px;
+    font-weight: bold;
+    line-height: 1.4;
+    color: #1e3a8a;
+  }
+  .reveal-box {
+    margin-top: 16px;
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 16px;
+    min-height: 90px;
+  }
+  .sentence {
+    font-size: 28px;
+    font-weight: bold;
+    line-height: 1.4;
+  }
+  .hidden-text {
+    color: #94a3b8;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  .progress {
+    margin-top: 14px;
+    font-size: 15px;
+    color: #374151;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .buttons2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+  }
+  button {
+    border: none;
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .primary { background: #2563eb; color: white; }
+  .green { background: #10b981; color: white; }
+  .dark { background: #0f172a; color: white; }
+  .light { background: #e5e7eb; color: #111827; }
+  .note {
+    margin-top: 14px;
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="card">
+    <h1>Dutch Translation Flashcards</h1>
+    <div class="muted">
+      Read the English translation first, try to say the Dutch sentence yourself, then reveal the Dutch sentence and listen to it.
+    </div>
+
+    <div class="label">Dutch sentences (one per line)</div>
+    <textarea id="sentences">Het meisje drinkt water.
+De jongen fietst in het park.
+De vrouw leest een boek.</textarea>
+
+    <div class="label">English translations (one per line, same order)</div>
+    <textarea id="translations">The girl drinks water.
+The boy rides a bike in the park.
+The woman reads a book.</textarea>
+
+    <div class="row" style="margin-top:12px;">
+      <div>
+        <div class="label">Voice</div>
+        <select id="voice"></select>
+      </div>
+      <div>
+        <div class="label">Speed</div>
+        <input id="speed" type="number" min="0.5" max="1.2" step="0.1" value="0.8" />
+      </div>
+    </div>
+
+    <div class="translation-box">
+      <div id="translation" class="translation-text">The girl drinks water.</div>
+    </div>
+
+    <div class="reveal-box">
+      <div class="label">Dutch sentence</div>
+      <div id="sentence" class="hidden-text">Tap “Show sentence”</div>
+    </div>
+
+    <div id="progress" class="progress">Card 1 / 3</div>
+
+    <div class="buttons">
+      <button class="dark" id="showBtn">👁 Show sentence</button>
+      <button class="primary" id="speakBtn">🔊 Listen</button>
+    </div>
+
+    <div class="buttons2">
+      <button class="light" id="prevBtn">⬅ Previous</button>
+      <button class="green" id="nextBtn">➡ Next</button>
+    </div>
+
+    <div class="note">
+      Put the Dutch sentences in the first box and the English translations in the second box in the same order.
+    </div>
+  </div>
+</div>
+
+<script>
+  const sentencesEl = document.getElementById('sentences');
+  const translationsEl = document.getElementById('translations');
+  const voiceEl = document.getElementById('voice');
+  const speedEl = document.getElementById('speed');
+  const translationEl = document.getElementById('translation');
+  const sentenceEl = document.getElementById('sentence');
+  const progressEl = document.getElementById('progress');
+  const showBtn = document.getElementById('showBtn');
+  const speakBtn = document.getElementById('speakBtn');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+
+  let currentIndex = 0;
+  let revealed = false;
+  let voices = [];
+
+  function getLines(text) {
+    return text
+      .split(/\n+/)
+      .map(s => s.trim())
+      .filter(Boolean);
+  }
+
+  function getSentences() {
+    return getLines(sentencesEl.value);
+  }
+
+  function getTranslations() {
+    return getLines(translationsEl.value);
+  }
+
+  function loadVoices() {
+    voices = window.speechSynthesis.getVoices() || [];
+    voiceEl.innerHTML = '';
+
+    voices.forEach(v => {
+      const option = document.createElement('option');
+      option.value = v.name;
+      option.textContent = `${v.name} (${v.lang})`;
+      voiceEl.appendChild(option);
+    });
+
+    const dutch = voices.find(v => (v.lang || '').toLowerCase().startsWith('nl'));
+    if (dutch) {
+      voiceEl.value = dutch.name;
+    }
+  }
+
+  function speakCurrentSentence() {
+    const sentences = getSentences();
+    if (!sentences.length) return;
+
+    window.speechSynthesis.cancel();
+
+    const utter = new SpeechSynthesisUtterance(sentences[currentIndex]);
+    utter.lang = 'nl-NL';
+    utter.rate = Number(speedEl.value || 0.8);
+
+    const selected = voices.find(v => v.name === voiceEl.value);
+    if (selected) {
+      utter.voice = selected;
+      utter.lang = selected.lang;
+    }
+
+    window.speechSynthesis.speak(utter);
+  }
+
+  function render() {
+    const sentences = getSentences();
+    const translations = getTranslations();
+
+    if (!sentences.length) {
+      currentIndex = 0;
+      translationEl.textContent = 'No sentences';
+      sentenceEl.textContent = 'No sentences';
+      sentenceEl.className = 'hidden-text';
+      progressEl.textContent = 'Card 0 / 0';
+      return;
+    }
+
+    if (currentIndex < 0) currentIndex = 0;
+    if (currentIndex >= sentences.length) currentIndex = sentences.length - 1;
+
+    progressEl.textContent = `Card ${currentIndex + 1} / ${sentences.length}`;
+    translationEl.textContent = translations[currentIndex] || '(No English translation for this line)';
+
+    if (revealed) {
+      sentenceEl.textContent = sentences[currentIndex];
+      sentenceEl.className = 'sentence';
+      showBtn.textContent = '🙈 Hide sentence';
+    } else {
+      sentenceEl.textContent = 'Tap “Show sentence”';
+      sentenceEl.className = 'hidden-text';
+      showBtn.textContent = '👁 Show sentence';
+    }
+  }
+
+  sentencesEl.addEventListener('input', () => {
+    const sentences = getSentences();
+    if (currentIndex >= sentences.length) currentIndex = Math.max(0, sentences.length - 1);
+    revealed = false;
+    render();
+  });
+
+  translationsEl.addEventListener('input', () => {
+    render();
+  });
+
+  showBtn.addEventListener('click', () => {
+    revealed = !revealed;
+    render();
+  });
+
+  speakBtn.addEventListener('click', () => {
+    if (!revealed) {
+      revealed = true;
+      render();
+    }
+    speakCurrentSentence();
+  });
+
+  nextBtn.addEventListener('click', () => {
+    const sentences = getSentences();
+    if (!sentences.length) return;
+    currentIndex = (currentIndex + 1) % sentences.length;
+    revealed = false;
+    window.speechSynthesis.cancel();
+    render();
+  });
+
+  prevBtn.addEventListener('click', () => {
+    const sentences = getSentences();
+    if (!sentences.length) return;
+    currentIndex = (currentIndex - 1 + sentences.length) % sentences.length;
+    revealed = false;
+    window.speechSynthesis.cancel();
+    render();
+  });
+
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+  loadVoices();
+  render();
+</script>
+</body>
+</html>
